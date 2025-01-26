@@ -1,19 +1,25 @@
 const mongoose = require("mongoose");
 
-const blockSchema = new mongoose.Schema({
-    text: { type: String, required: true },
-    showInOption: { type: Boolean, default: false }, 
-    isAnswer: { type: Boolean, default: false }, 
+const questionSchema = new mongoose.Schema({
+  type: String,
+  anagramType: String,
+  blocks: [
+    {
+      text: String,
+      showInOption: Boolean,
+      isAnswer: Boolean,
+    },
+  ],
+  siblingId: mongoose.Schema.Types.ObjectId,
+  solution: String,
+  title: String,
+  options: [
+    {
+      text: String,
+      isCorrectAnswer: Boolean,
+    },
+  ],
 });
 
-const quesSchema = new mongoose.Schema({
-    type: { type: String, required: true },
-    anagramType: { type: String, default: null }, 
-    blocks: { type: [blockSchema], required: true },
-    siblingId: { type: mongoose.Schema.Types.ObjectId, default: null }, 
-    solution: { type: String, required: true },
-    title: { type: String, required: true },
-});
-
-const Question = mongoose.model("Question", quesSchema);
+const Question = mongoose.model("Question", questionSchema);
 module.exports = Question;

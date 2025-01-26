@@ -1,20 +1,32 @@
-const connect=require("./connect.js");
-const Question=require("./schema.js");
-const fs=require("fs");
-const path=require("path");
+const mongoose = require("mongoose");
+const connect = require("./connect"); // Import your connect function
+const Question = require("./schema"); // Import the Question model
+const fs = require("fs");
 
-connect();
-
-async function upload() {
-    try{
-        const file=path.join(__dirname,"questions.json");
-        const questions=JSON.parse(fs.readFileSync(file,"utf8"));
-        await Question.deleteMany({});
-        await Question.insertMany(questions);
-        console.log("Questions uploaded");
-
-    }catch(err){
-        console.log("Error in uploading",err);
+async function uploadData() {
+    try {
+      // Connect to MongoDB
+      connect();
+  
+      // Read and parse the JSON file
+      const data = JSON.parse(fs.readFileSync("./questions.json", "utf-8"));
+  
+      // Convert `_id` and `siblingId` to ObjectId if they exist
+      const questions = data.map((q) => ({
+        ...q,
+        _id: q._id?.$oid ? new mongoose.Types.ObjectId(q._id.$oid) : new mongoose.Types.ObjectId(q._id),
+        siblingId: q.siblingId?.$oid ? new mongoose.Types.ObjectId(q.siblingId.$oid) : new mongoose.Types.ObjectId(q.siblingId),
+      }));
+  
+      // Insert data into the collection
+      await Question.insertMany(questions);
+      console.log("Data uploaded successfully!");
+      process.exit(); // Exit the process after uploading
+    } catch (err) {
+      console.error("Error uploading data:", err.message);
+      process.exit(1); // Exit with failure
     }
-}
-upload();
+  }
+  
+
+uploadData();
