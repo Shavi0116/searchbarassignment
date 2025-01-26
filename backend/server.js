@@ -51,6 +51,6 @@ server.addService(questionsProto.service, {
 
 const PORT = "50051";
 server.bindAsync(`0.0.0.0:${PORT}`, grpc.ServerCredentials.createInsecure(), () => {
-  console.log(`gRPC server running on port ${PORT}`);
+  console.log(`gRPC server running on ${PORT}`);
   server.start();
 });
