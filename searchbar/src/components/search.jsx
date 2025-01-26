@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { searchQuestions } from "../services/searchService"; // Mock or replace this as needed
+import { searchQuestions } from "../services/searchService"; 
 import "./search.css";
 
 const sampleQuestions = [

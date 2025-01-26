@@ -1,14 +1,9 @@
-const express = require("express");
-const cors = require("cors");
 const grpc = require("@grpc/grpc-js");
 const protoLoader = require("@grpc/proto-loader");
-const { grpcWebMiddleware } = require("grpc-web-middleware"); // Import grpc-web-middleware
 const mongoose = require("mongoose");
 const Question = require("./schema");
 
 const PROTO_PATH = "./questions.proto";
-const GRPC_PORT = "50051";
-const PROXY_PORT = 8080;
 
 const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
   keepCase: true,
@@ -19,7 +14,8 @@ const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
 });
 
 const questionsProto = grpc.loadPackageDefinition(packageDefinition).QuestionService;
-const grpcServer = new grpc.Server();
+
+const server = new grpc.Server();
 
 async function searchQuestions(call, callback) {
   const { query, page, pageSize } = call.request;
@@ -27,7 +23,7 @@ async function searchQuestions(call, callback) {
 
   try {
     const questions = await Question.find({
-      title: { $regex: query, $options: "i" },
+      title: { $regex: query, $options: "i" }, 
     })
       .skip(skip)
       .limit(pageSize);
@@ -49,20 +45,12 @@ async function searchQuestions(call, callback) {
   }
 }
 
-grpcServer.addService(questionsProto.service, {
+server.addService(questionsProto.service, {
   SearchQuestions: searchQuestions,
 });
 
-grpcServer.bindAsync(`0.0.0.0:${GRPC_PORT}`, grpc.ServerCredentials.createInsecure(), () => {
-  console.log(`gRPC server running on port ${GRPC_PORT}`);
-  grpcServer.start();
-});
-
-const app = express();
-app.use(cors());
-
-app.use(grpcWebMiddleware(`localhost:${GRPC_PORT}`));
-
-app.listen(PROXY_PORT, () => {
-  console.log(`CORS-enabled gRPC-Web proxy server running on port ${PROXY_PORT}`);
+const PORT = "50051";
+server.bindAsync(`0.0.0.0:${PORT}`, grpc.ServerCredentials.createInsecure(), () => {
+  console.log(`gRPC server running on port ${PORT}`);
+  server.start();
 });
